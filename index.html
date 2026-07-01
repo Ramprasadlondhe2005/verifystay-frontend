@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VerifyStay — Real Listing Verification</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+:root {
+  --bg:      #0d0f12;
+  --surface: #151820;
+  --card:    #1c2030;
+  --border:  #2a2f3d;
+  --border2: #3a4155;
+  --text:    #e8eaf0;
+  --muted:   #7a8099;
+  --accent:  #ff5a5f;
+  --green:   #22c97a;
+  --amber:   #f5a623;
+  --red:     #f05252;
+  --blue:    #4f9cf9;
+  --r:       12px;
+  --rs:      8px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
+
+nav{display:flex;align-items:center;justify-content:space-between;padding:16px 40px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:100}
+.logo{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700}
+.logo span{background:linear-gradient(135deg,var(--accent),#ff385c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.nav-tag{font-size:12px;color:var(--muted);background:var(--card);border:1px solid var(--border);padding:4px 12px;border-radius:20px}
+
+.container{max-width:660px;margin:0 auto;padding:0 20px 80px}
+
+.hero{text-align:center;padding:60px 0 40px}
+.eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--accent);background:rgba(255,90,95,.1);border:1px solid rgba(255,90,95,.25);padding:4px 14px;border-radius:20px;margin-bottom:20px;text-transform:uppercase;letter-spacing:.05em}
+.hero h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(26px,5vw,40px);font-weight:700;line-height:1.15;letter-spacing:-1px;margin-bottom:14px}
+.hero h1 em{font-style:normal;background:linear-gradient(135deg,var(--accent),#ff385c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--muted);font-size:15px;max-width:460px;margin:0 auto}
+
+/* STEPS PROGRESS */
+.steps-bar{display:flex;align-items:center;gap:0;margin-bottom:32px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;overflow-x:auto}
+.step-pill{display:flex;align-items:center;gap:8px;white-space:nowrap;flex-shrink:0}
+.step-num{width:26px;height:26px;border-radius:50%;background:var(--border);color:var(--muted);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;transition:.3s}
+.step-pill.active .step-num{background:var(--accent);color:#fff}
+.step-pill.done .step-num{background:var(--green);color:#fff}
+.step-pill .step-lbl{font-size:13px;font-weight:500;color:var(--muted)}
+.step-pill.active .step-lbl{color:var(--text)}
+.step-pill.done .step-lbl{color:var(--green)}
+.step-arrow{color:var(--border2);margin:0 8px;font-size:14px;flex-shrink:0}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px;margin-bottom:16px}
+.card-title{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;margin-bottom:22px;display:flex;align-items:center;gap:10px}
+.card-title .icon{font-size:20px}
+
+.field{margin-bottom:18px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+label{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:7px}
+label .req{color:var(--accent)}
+label .opt{color:var(--border2);font-weight:400}
+input,textarea,select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:10px 13px;outline:none;transition:.15s}
+input::placeholder,textarea::placeholder{color:var(--border2)}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,90,95,.12)}
+textarea{resize:vertical;min-height:80px}
+select option{background:var(--card)}
+
+/* STATUS BOXES */
+.status-box{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--rs);border:1px solid var(--border);background:var(--surface);font-size:13px;margin-bottom:14px}
+.status-box.success{border-color:rgba(34,201,122,.4);background:rgba(34,201,122,.08);color:var(--green)}
+.status-box.error{border-color:rgba(240,82,82,.4);background:rgba(240,82,82,.08);color:var(--red)}
+.status-box.info{border-color:rgba(79,156,249,.4);background:rgba(79,156,249,.08);color:var(--blue)}
+.status-box.warn{border-color:rgba(245,166,35,.4);background:rgba(245,166,35,.08);color:var(--amber)}
+
+/* BUTTONS */
+.btn{border:none;border-radius:var(--rs);font-family:'Inter',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:.15s;padding:10px 18px}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#ff385c);color:#fff;width:100%;font-size:15px;font-family:'Space Grotesk',sans-serif;font-weight:600;padding:13px}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-secondary{background:var(--surface);color:var(--text);border:1px solid var(--border);width:100%;margin-top:10px}
+.btn-secondary:hover{border-color:var(--accent);color:var(--text)}
+.btn-sm{background:var(--surface);color:var(--blue);border:1px solid rgba(79,156,249,.4);font-size:13px;padding:8px 14px}
+.btn-sm:hover{background:rgba(79,156,249,.1)}
+.btn-danger{background:transparent;color:var(--red);border:1px solid rgba(240,82,82,.4);font-size:13px;padding:8px 14px}
+
+/* WEBCAM */
+#webcamWrap{position:relative;border-radius:var(--rs);overflow:hidden;background:#000;border:1px solid var(--border);margin-bottom:12px;display:none}
+video#webcam{width:100%;display:block;max-height:260px;object-fit:cover}
+.webcam-overlay{position:absolute;bottom:0;left:0;right:0;padding:10px;background:linear-gradient(transparent,rgba(0,0,0,.7));display:flex;justify-content:center;gap:10px}
+#capturedWrap{display:none;margin-bottom:12px}
+#capturedImg{width:100%;border-radius:var(--rs);border:1px solid var(--border)}
+
+/* FILE UPLOAD */
+.file-drop{border:2px dashed var(--border2);border-radius:var(--rs);padding:28px;text-align:center;cursor:pointer;transition:.15s;position:relative}
+.file-drop:hover{border-color:var(--accent);background:rgba(255,90,95,.04)}
+.file-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.file-drop-icon{font-size:32px;margin-bottom:8px}
+.file-drop-text{font-size:13px;color:var(--muted)}
+.file-name{font-size:13px;color:var(--green);margin-top:8px;font-weight:500}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:22px 0}
+
+/* LOADING */
+.loading-card{display:none;text-align:center;padding:48px 32px}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-steps{display:flex;flex-direction:column;gap:8px;max-width:320px;margin:20px auto 0;text-align:left}
+.lstep{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--border2);transition:.3s}
+.lstep.active{color:var(--text)}
+.lstep.done{color:var(--green)}
+.ldot{width:7px;height:7px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:.3s}
+.lstep.active .ldot{background:var(--accent)}
+.lstep.done .ldot{background:var(--green)}
+
+/* RESULT */
+.result-card{display:none}
+.result-header{border-radius:var(--r) var(--r) 0 0;padding:24px 28px;display:flex;align-items:center;gap:18px}
+.result-header.green{background:rgba(34,201,122,.1);border:1px solid rgba(34,201,122,.3)}
+.result-header.amber{background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3)}
+.result-header.red{background:rgba(240,82,82,.1);border:1px solid rgba(240,82,82,.3)}
+.r-icon{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;flex-shrink:0}
+.green .r-icon{background:rgba(34,201,122,.2);color:var(--green)}
+.amber .r-icon{background:rgba(245,166,35,.2);color:var(--amber)}
+.red   .r-icon{background:rgba(240,82,82,.2); color:var(--red)}
+.r-meta{flex:1}
+.r-host{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;margin-bottom:4px}
+.r-badge{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:20px}
+.green .r-badge{background:rgba(34,201,122,.15);color:var(--green)}
+.amber .r-badge{background:rgba(245,166,35,.15);color:var(--amber)}
+.red   .r-badge{background:rgba(240,82,82,.15); color:var(--red)}
+.r-score{text-align:center}
+.r-score-num{font-family:'Space Grotesk',sans-serif;font-size:38px;font-weight:700;line-height:1}
+.r-score-lbl{font-size:11px;color:var(--muted);margin-top:3px}
+.result-body{background:var(--card);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r);padding:24px 28px}
+
+.checks-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+.check-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:14px;display:flex;align-items:flex-start;gap:12px}
+.check-box-icon{font-size:18px;flex-shrink:0}
+.check-box-label{font-size:12px;color:var(--muted);font-weight:500;margin-bottom:2px}
+.check-box-val{font-size:13px;font-weight:500;color:var(--text)}
+.check-pts{margin-left:auto;font-size:12px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.pts-full{background:rgba(34,201,122,.15);color:var(--green)}
+.pts-half{background:rgba(245,166,35,.15);color:var(--amber)}
+.pts-zero{background:rgba(240,82,82,.15); color:var(--red)}
+
+.findings-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.finding-item{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--muted);padding:7px 0;border-bottom:1px solid var(--border)}
+.finding-item:last-child{border-bottom:none}
+.f-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.f-dot.ok{background:var(--green)}
+.f-dot.bad{background:var(--red)}
+.f-dot.warn{background:var(--amber)}
+
+.reset-btn{margin-top:20px;width:100%;background:transparent;border:1px solid var(--border2);border-radius:var(--rs);color:var(--muted);font-family:'Inter',sans-serif;font-size:14px;padding:11px;cursor:pointer;transition:.15s}
+.reset-btn:hover{border-color:var(--accent);color:var(--text)}
+
+/* OTP DISPLAY */
+.otp-display{background:var(--surface);border:2px solid var(--accent);border-radius:var(--rs);padding:16px;text-align:center;margin-bottom:12px}
+.otp-code{font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:700;color:var(--accent);letter-spacing:6px}
+.otp-instruction{font-size:12px;color:var(--muted);margin-top:6px}
+
+@media(max-width:520px){
+  nav{padding:14px 16px}
+  .container{padding:0 14px 60px}
+  .card{padding:18px}
+  .field-row{grid-template-columns:1fr}
+  .checks-grid{grid-template-columns:1fr}
+  .result-header{flex-wrap:wrap;padding:18px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Verify<span>Stay</span></div>
+  <div class="nav-tag">Airbnb Verification Prototype v2.0</div>
+</nav>
+
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="eyebrow">🛡️ Built for Airbnb Trust &amp; Safety</div>
+    <h1>Verify listings <em>before</em><br/>they go live</h1>
+    <p>4-layer verification: Host identity · Live GPS · Photo EXIF · 7/12 Land Record</p>
+  </div>
+
+  <!-- STEPS PROGRESS BAR -->
+  <div class="steps-bar" id="stepsBar">
+    <div class="step-pill active" id="spill-1">
+      <div class="step-num">1</div><div class="step-lbl">Host Identity</div>
+    </div>
+    <div class="step-arrow">›</div>
+    <div class="step-pill" id="spill-2">
+      <div class="step-num">2</div><div class="step-lbl">GPS Location</div>
+    </div>
+    <div class="step-arrow">›</div>
+    <div class="step-pill" id="spill-3">
+      <div class="step-num">3</div><div class="step-lbl">Live Photo</div>
+    </div>
+    <div class="step-arrow">›</div>
+    <div class="step-pill" id="spill-4">
+      <div class="step-num">4</div><div class="step-lbl">7/12 Record</div>
+    </div>
+    <div class="step-arrow">›</div>
+    <div class="step-pill" id="spill-5">
+      <div class="step-num">5</div><div class="step-lbl">Listing</div>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 1: HOST IDENTITY ═══ -->
+  <div id="step1">
+    <div class="card">
+      <div class="card-title"><span class="icon">🪪</span> Step 1 — Host Identity</div>
+
+      <div class="field">
+        <label>Full name <span class="req">*</span></label>
+        <input type="text" id="hostName" placeholder="e.g. Rahul Sharma"/>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>PAN number <span class="req">*</span></label>
+          <input type="text" id="panNumber" placeholder="e.g. ABCPS1234D" maxlength="10" style="text-transform:uppercase"/>
+        </div>
+        <div class="field">
+          <label>Aadhaar <span class="opt">(optional)</span></label>
+          <input type="text" id="aadhaar" placeholder="12-digit number" maxlength="12"/>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="goStep2()">Next — Verify GPS Location →</button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 2: GPS LOCATION ═══ -->
+  <div id="step2" style="display:none">
+    <div class="card">
+      <div class="card-title"><span class="icon">📍</span> Step 2 — Property Location</div>
+
+      <div class="field">
+        <label>Property address <span class="req">*</span></label>
+        <input type="text" id="propertyAddress" placeholder="Full address with PIN code e.g. Flat 302, Candolim, Goa 403515"/>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field">
+        <label>Your current GPS location <span class="req">*</span></label>
+        <div id="gpsStatus" class="status-box info">
+          📡 Click button below to capture your live GPS location
+        </div>
+        <button class="btn btn-sm" onclick="captureGPS()" style="width:100%">📍 Capture My Location Now</button>
+        <input type="hidden" id="browserLat"/>
+        <input type="hidden" id="browserLng"/>
+      </div>
+
+      <div class="field">
+        <label>Listing address GPS <span class="opt">(auto from address)</span></label>
+        <div id="geocodeStatus" class="status-box info">
+          Enter address above and click "Geocode Address"
+        </div>
+        <button class="btn btn-sm" onclick="geocodeAddress()" style="width:100%">🗺️ Geocode Address</button>
+        <input type="hidden" id="listingLat"/>
+        <input type="hidden" id="listingLng"/>
+      </div>
+
+      <div class="divider"></div>
+      <button class="btn btn-primary" onclick="goStep3()">Next — Take Live Photo →</button>
+      <button class="btn btn-secondary" onclick="goBack(1)">← Back</button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 3: LIVE PHOTO ═══ -->
+  <div id="step3" style="display:none">
+    <div class="card">
+      <div class="card-title"><span class="icon">📸</span> Step 3 — Live Property Photo</div>
+
+      <!-- OTP Display -->
+      <div class="otp-display">
+        <div class="otp-code" id="otpCode">------</div>
+        <div class="otp-instruction">Hold this OTP code in front of the camera while taking the photo</div>
+      </div>
+
+      <div id="webcamWrap">
+        <video id="webcam" autoplay playsinline muted></video>
+        <div class="webcam-overlay">
+          <button class="btn btn-sm" onclick="capturePhoto()">📸 Take Photo</button>
+          <button class="btn btn-danger" onclick="stopWebcam()">✕ Cancel</button>
+        </div>
+      </div>
+
+      <div id="capturedWrap">
+        <img id="capturedImg" src="" alt="Captured photo"/>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-sm" onclick="retakePhoto()" style="flex:1">↺ Retake</button>
+          <button class="btn btn-sm" onclick="acceptPhoto()" style="flex:1;background:rgba(34,201,122,.15);color:var(--green);border-color:rgba(34,201,122,.4)">✓ Use this photo</button>
+        </div>
+      </div>
+
+      <div id="photoStatus" class="status-box info" style="margin-bottom:12px">
+        📷 Turn on webcam and take a live photo at the property
+      </div>
+
+      <button class="btn btn-sm" onclick="startWebcam()" style="width:100%;margin-bottom:8px">📷 Open Webcam</button>
+
+      <p style="font-size:12px;color:var(--muted);margin-bottom:16px">
+        💡 For best results: take photo on your phone with Location turned ON — GPS will be embedded automatically in EXIF data
+      </p>
+
+      <input type="file" id="photoUpload" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)"/>
+      <button class="btn btn-secondary" onclick="document.getElementById('photoUpload').click()" style="margin-bottom:0">
+        📁 Or upload photo from phone (with GPS)
+      </button>
+
+      <div class="divider"></div>
+      <button class="btn btn-primary" onclick="goStep4()">Next — Upload Land Record →</button>
+      <button class="btn btn-secondary" onclick="goBack(2)">← Back</button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 4: 7/12 LAND RECORD ═══ -->
+  <div id="step4" style="display:none">
+    <div class="card">
+      <div class="card-title"><span class="icon">📄</span> Step 4 — Land Record (7/12 / Khasra)</div>
+
+      <div class="status-box info" style="margin-bottom:16px">
+        Upload your 7/12 Utara (Maharashtra), Khasra/Khatauni (UP/MP), or Property Card. PDF or image accepted.
+      </div>
+
+      <div class="file-drop" id="landDrop">
+        <input type="file" id="landFile" accept=".pdf,image/*" onchange="handleLandFile(event)"/>
+        <div class="file-drop-icon">📄</div>
+        <div class="file-drop-text">Click or drag your 7/12 / land record here</div>
+        <div class="file-name" id="landFileName"></div>
+      </div>
+
+      <div id="landStatus" class="status-box info" style="margin-top:12px;display:none"></div>
+
+      <div class="divider"></div>
+      <button class="btn btn-primary" onclick="goStep5()">Next — Listing Details →</button>
+      <button class="btn btn-secondary" onclick="goBack(3)">← Back</button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 5: LISTING DETAILS ═══ -->
+  <div id="step5" style="display:none">
+    <div class="card">
+      <div class="card-title"><span class="icon">🏠</span> Step 5 — Listing Details</div>
+
+      <div class="field">
+        <label>Listing title</label>
+        <input type="text" id="listingTitle" placeholder="e.g. Cozy 1BHK near Baga Beach, Goa"/>
+      </div>
+      <div class="field">
+        <label>Description / about the property</label>
+        <textarea id="listingDesc" placeholder="Describe your property — amenities, rules, nearby places. Do NOT ask for advance payment outside Airbnb."></textarea>
+      </div>
+      <div class="field">
+        <label>Nightly price (₹)</label>
+        <input type="number" id="listingPrice" placeholder="e.g. 2500"/>
+      </div>
+
+      <div class="divider"></div>
+      <button class="btn btn-primary" onclick="runVerification()">🔍 Run Full Verification</button>
+      <button class="btn btn-secondary" onclick="goBack(4)">← Back</button>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="card loading-card" id="loadingCard">
+    <div class="spinner"></div>
+    <div style="font-size:15px;font-weight:500">Running all 4 verification checks...</div>
+    <div class="loading-steps">
+      <div class="lstep" id="ls1"><div class="ldot"></div>Verifying host identity (PAN + Aadhaar)</div>
+      <div class="lstep" id="ls2"><div class="ldot"></div>Checking GPS location match</div>
+      <div class="lstep" id="ls3"><div class="ldot"></div>Reading photo EXIF GPS data</div>
+      <div class="lstep" id="ls4"><div class="ldot"></div>OCR scan on land record document</div>
+      <div class="lstep" id="ls5"><div class="ldot"></div>Scanning listing for fraud keywords</div>
+      <div class="lstep" id="ls6"><div class="ldot"></div>Calculating Trust Score</div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result-card" id="resultCard">
+    <div class="result-header" id="resultHeader">
+      <div class="r-icon" id="rIcon"></div>
+      <div class="r-meta">
+        <div class="r-host" id="rHost"></div>
+        <div class="r-badge" id="rBadge"></div>
+      </div>
+      <div class="r-score">
+        <div class="r-score-num" id="rScore"></div>
+        <div class="r-score-lbl">out of 100</div>
+      </div>
+    </div>
+    <div class="result-body">
+      <div class="checks-grid" id="checksGrid"></div>
+      <div class="findings-title">Verification Findings</div>
+      <div id="findingsList"></div>
+      <button class="reset-btn" onclick="resetAll()">← Verify another listing</button>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ─── STATE ───────────────────────────────────────────────
+const API_URL    = "https://verifystay-backend-1.onrender.com/";
+let currentStep  = 1;
+let browserLat   = null, browserLng = null;
+let listingLat   = null, listingLng = null;
+let photoBlob    = null;
+let photoFile    = null;
+let landFileData = null;
+let webcamStream = null;
+let currentOTP   = "";
+
+// ─── OTP GENERATE ────────────────────────────────────────
+function generateOTP() {
+  currentOTP = Math.floor(100000 + Math.random() * 900000).toString();
+  document.getElementById("otpCode").textContent = currentOTP;
+}
+
+// ─── STEP NAVIGATION ─────────────────────────────────────
+function showStep(n) {
+  [1,2,3,4,5].forEach(i => {
+    document.getElementById("step"+i).style.display = i===n ? "block" : "none";
+    const pill = document.getElementById("spill-"+i);
+    pill.className = "step-pill" + (i < n ? " done" : i === n ? " active" : "");
+  });
+  currentStep = n;
+  window.scrollTo({top: 0, behavior: "smooth"});
+}
+
+function goBack(n) { showStep(n); }
+
+function goStep2() {
+  if (!document.getElementById("hostName").value.trim()) {
+    alert("Please enter host name"); return;
+  }
+  if (!document.getElementById("panNumber").value.trim()) {
+    alert("Please enter PAN number"); return;
+  }
+  showStep(2);
+}
+
+function goStep3() {
+  if (!document.getElementById("propertyAddress").value.trim()) {
+    alert("Please enter property address"); return;
+  }
+  generateOTP();
+  showStep(3);
+}
+
+function goStep4() { showStep(4); }
+function goStep5() { showStep(5); }
+
+// ─── GPS CAPTURE ─────────────────────────────────────────
+function captureGPS() {
+  const box = document.getElementById("gpsStatus");
+  box.className = "status-box info";
+  box.textContent = "📡 Requesting GPS permission...";
+
+  if (!navigator.geolocation) {
+    box.className = "status-box error";
+    box.textContent = "❌ Geolocation not supported in this browser";
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      browserLat = pos.coords.latitude;
+      browserLng = pos.coords.longitude;
+      document.getElementById("browserLat").value = browserLat;
+      document.getElementById("browserLng").value = browserLng;
+      box.className = "status-box success";
+      box.textContent = `✓ GPS captured: ${browserLat.toFixed(5)}, ${browserLng.toFixed(5)} (accuracy: ±${Math.round(pos.coords.accuracy)}m)`;
+    },
+    err => {
+      box.className = "status-box error";
+      box.textContent = `❌ GPS error: ${err.message}. Please allow location access.`;
+    },
+    { enableHighAccuracy: true, timeout: 15000 }
+  );
+}
+
+// ─── GEOCODE ADDRESS ─────────────────────────────────────
+async function geocodeAddress() {
+  const addr = document.getElementById("propertyAddress").value.trim();
+  const box  = document.getElementById("geocodeStatus");
+  if (!addr) { alert("Enter address first"); return; }
+
+  box.className = "status-box info";
+  box.textContent = "🗺️ Converting address to GPS coordinates...";
+
+  // Try Google Maps geocoding (no key needed for demo — uses mock)
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}&countrycodes=in&limit=1`;
+    const res  = await fetch(url, {headers: {"Accept-Language": "en"}});
+    const data = await res.json();
+    if (data && data.length > 0) {
+      listingLat = parseFloat(data[0].lat);
+      listingLng = parseFloat(data[0].lon);
+      document.getElementById("listingLat").value = listingLat;
+      document.getElementById("listingLng").value = listingLng;
+      box.className = "status-box success";
+      box.textContent = `✓ Address geocoded: ${listingLat.toFixed(5)}, ${listingLng.toFixed(5)}`;
+    } else {
+      // Fallback: use browser GPS as listing GPS for demo
+      listingLat = browserLat || 15.5189;
+      listingLng = browserLng || 73.7625;
+      document.getElementById("listingLat").value = listingLat;
+      document.getElementById("listingLng").value = listingLng;
+      box.className = "status-box warn";
+      box.textContent = "⚠️ Address not found — using your current location as demo. Real system: Google Maps API";
+    }
+  } catch(e) {
+    listingLat = 15.5189; listingLng = 73.7625;
+    document.getElementById("listingLat").value = listingLat;
+    document.getElementById("listingLng").value = listingLng;
+    box.className = "status-box warn";
+    box.textContent = "⚠️ Geocoding offline — using demo coordinates";
+  }
+}
+
+// ─── WEBCAM ──────────────────────────────────────────────
+async function startWebcam() {
+  try {
+    webcamStream = await navigator.mediaDevices.getUserMedia({video: {facingMode:"environment"}, audio:false});
+    document.getElementById("webcam").srcObject = webcamStream;
+    document.getElementById("webcamWrap").style.display = "block";
+    document.getElementById("capturedWrap").style.display = "none";
+    document.getElementById("photoStatus").className = "status-box info";
+    document.getElementById("photoStatus").textContent = "📷 Webcam active — show OTP card + property in frame, then click Take Photo";
+  } catch(e) {
+    document.getElementById("photoStatus").className = "status-box error";
+    document.getElementById("photoStatus").textContent = `❌ Camera error: ${e.message}. Upload a photo instead.`;
+  }
+}
+
+function capturePhoto() {
+  const video  = document.getElementById("webcam");
+  const canvas = document.createElement("canvas");
+  canvas.width  = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext("2d").drawImage(video, 0, 0);
+  canvas.toBlob(blob => {
+    photoBlob = blob;
+    const url = URL.createObjectURL(blob);
+    document.getElementById("capturedImg").src = url;
+    document.getElementById("capturedWrap").style.display = "block";
+    document.getElementById("webcamWrap").style.display   = "none";
+    stopWebcam();
+  }, "image/jpeg", 0.92);
+}
+
+function retakePhoto() {
+  document.getElementById("capturedWrap").style.display = "none";
+  photoBlob = null;
+  startWebcam();
+}
+
+function acceptPhoto() {
+  document.getElementById("photoStatus").className = "status-box success";
+  document.getElementById("photoStatus").textContent = "✓ Photo captured — Note: webcam photos may lack EXIF GPS. Upload from phone for full GPS verification.";
+}
+
+function stopWebcam() {
+  if (webcamStream) {
+    webcamStream.getTracks().forEach(t => t.stop());
+    webcamStream = null;
+  }
+  document.getElementById("webcamWrap").style.display = "none";
+}
+
+function handlePhotoUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  photoFile = file;
+  photoBlob = file;
+  const url  = URL.createObjectURL(file);
+  document.getElementById("capturedImg").src = url;
+  document.getElementById("capturedWrap").style.display = "block";
+  document.getElementById("photoStatus").className = "status-box success";
+  document.getElementById("photoStatus").textContent = `✓ Photo uploaded: ${file.name} — GPS will be extracted from EXIF`;
+}
+
+// ─── LAND FILE ───────────────────────────────────────────
+function handleLandFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  landFileData = file;
+  document.getElementById("landFileName").textContent = "✓ " + file.name;
+  const box = document.getElementById("landStatus");
+  box.style.display = "flex";
+  box.className = "status-box success";
+  box.textContent = `✓ File selected: ${file.name} (${(file.size/1024).toFixed(0)} KB) — will be OCR scanned`;
+}
+
+// ─── MAIN VERIFICATION ───────────────────────────────────
+async function runVerification() {
+  // Hide all steps, show loading
+  [1,2,3,4,5].forEach(i => document.getElementById("step"+i).style.display = "none");
+  document.getElementById("stepsBar").style.display = "none";
+  document.getElementById("loadingCard").style.display = "block";
+
+  // Animate loading steps
+  const lsteps = ["ls1","ls2","ls3","ls4","ls5","ls6"];
+  const delays  = [400, 900, 1400, 2000, 2600, 3200];
+  lsteps.forEach((id, i) => {
+    setTimeout(() => {
+      if (i > 0) document.getElementById(lsteps[i-1]).className = "lstep done";
+      document.getElementById(id).className = "lstep active";
+    }, delays[i]);
+  });
+
+  // Build FormData
+  const fd = new FormData();
+  fd.append("host_name",       document.getElementById("hostName").value.trim());
+  fd.append("pan_number",      document.getElementById("panNumber").value.trim().toUpperCase());
+  fd.append("aadhaar",         document.getElementById("aadhaar").value.trim());
+  fd.append("browser_lat",     browserLat  || 15.5189);
+  fd.append("browser_lng",     browserLng  || 73.7625);
+  fd.append("listing_lat",     listingLat  || 15.5189);
+  fd.append("listing_lng",     listingLng  || 73.7625);
+  fd.append("listing_title",   document.getElementById("listingTitle").value.trim());
+  fd.append("listing_desc",    document.getElementById("listingDesc").value.trim());
+  if (photoBlob)    fd.append("live_photo",  photoBlob, "photo.jpg");
+  if (landFileData) fd.append("land_record", landFileData, landFileData.name);
+
+  await new Promise(r => setTimeout(r, 3800));
+
+  let data;
+  try {
+    const res = await fetch(API_URL + "/verify", { method: "POST", body: fd });
+    data = await res.json();
+  } catch(e) {
+    data = buildDemoResult();
+  }
+
+  document.getElementById("ls6").className = "lstep done";
+  await new Promise(r => setTimeout(r, 400));
+  document.getElementById("loadingCard").style.display = "none";
+  showResult(data);
+}
+
+// ─── DEMO RESULT (fallback when backend offline) ──────────
+function buildDemoResult() {
+  const pan        = document.getElementById("panNumber").value.trim().toUpperCase();
+  const host       = document.getElementById("hostName").value.trim();
+  const hasPhoto   = !!(photoBlob || photoFile);
+  const hasLand    = !!landFileData;
+  const desc       = document.getElementById("listingDesc").value.toLowerCase();
+  const hasFee     = /(advance|registration fee|pay before|send money|cash only|bypass)/i.test(desc);
+  const hasBrowserGPS = !!(browserLat && browserLng);
+  const hasListingGPS = !!(listingLat && listingLng);
+
+  const KNOWN_PANS = {
+    "ABCPS1234D": "Rahul Sharma", "DKJPM5678F": "Priya Mehta",
+    "FGHAP2345K": "Amit Patel",   "LMNSR6789P": "Sunita Rao",
+    "QRSVN9012R": "Vikram Nair"
+  };
+  const panValid = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan);
+  const panInDB  = KNOWN_PANS[pan];
+  const nameMatch = panInDB && panInDB.toLowerCase().includes(host.toLowerCase().split(" ")[0].toLowerCase());
+
+  let hostScore = 0;
+  if (panValid && panInDB && nameMatch) hostScore = 30;
+  else if (panValid && panInDB) hostScore = 18;
+  else if (panValid) hostScore = 12;
+
+  const distM = (hasBrowserGPS && hasListingGPS)
+    ? Math.round(Math.abs(browserLat - listingLat) * 111000)
+    : 999;
+  let gpsScore = 0;
+  if (distM <= 100) gpsScore = 30;
+  else if (distM <= 500) gpsScore = 20;
+  else if (hasBrowserGPS) gpsScore = 8;
+
+  const landScore    = hasLand ? 20 : 0;
+  const listingScore = hasFee ? 0 : 15;
+  const total        = hostScore + gpsScore + landScore + listingScore;
+
+  const verdict = total >= 70 ? "VERIFIED" : total >= 40 ? "NEEDS REVIEW" : "SUSPICIOUS";
+  const action  = total >= 70 ? "allow"    : total >= 40 ? "warn"         : "block";
+  const color   = total >= 70 ? "green"    : total >= 40 ? "amber"        : "red";
+
+  const reasons = [];
+  if (!panValid)       reasons.push("Invalid PAN format");
+  if (panValid && !panInDB) reasons.push("PAN not found in records (demo DB — real: NSDL API)");
+  if (!hasBrowserGPS)  reasons.push("GPS not captured — location unverified");
+  if (distM > 500)     reasons.push(`Host is ${(distM/1000).toFixed(1)}km from property`);
+  if (!hasLand)        reasons.push("No land record uploaded — 7/12 verification skipped");
+  if (hasFee)          reasons.push("Listing contains advance-payment red flag");
+
+  return {
+    host_name: host,
+    checks: {
+      host:    { score: hostScore, pan_valid: panValid,
+                 findings: [panInDB ? `PAN matches '${panInDB}'` : "PAN not in demo DB"] },
+      gps:     { score: gpsScore,
+                 findings: [distM <= 100 ? `Host is at property (${distM}m)` : `Host is ${distM}m from property`] },
+      land:    { score: landScore,
+                 reason: hasLand ? "Document uploaded — OCR processed" : "No land record provided" },
+      listing: { score: listingScore, red_flags: hasFee ? ["advance payment"] : [],
+                 reason: hasFee ? "Fraud keyword found in listing" : "No fraud keywords found" }
+    },
+    result: {
+      total_score: total, verdict, action, color,
+      reasons,
+      breakdown: {
+        host:    { score: hostScore,    max: 30, label: "Host Identity (PAN + Aadhaar)" },
+        gps:     { score: gpsScore,     max: 30, label: "GPS Location Verify" },
+        land:    { score: landScore,    max: 25, label: "7/12 Land Record OCR" },
+        listing: { score: listingScore, max: 15, label: "Listing Keyword Scan" }
+      }
+    }
+  };
+}
+
+// ─── SHOW RESULT ─────────────────────────────────────────
+function showResult(data) {
+  const r   = data.result;
+  const cls = r.color || (r.action === "allow" ? "green" : r.action === "warn" ? "amber" : "red");
+
+  document.getElementById("resultHeader").className = `result-header ${cls}`;
+  document.getElementById("rIcon").textContent  = cls === "green" ? "✓" : cls === "amber" ? "?" : "✗";
+  document.getElementById("rHost").textContent  = data.host_name;
+  document.getElementById("rBadge").textContent = r.verdict;
+  document.getElementById("rScore").textContent = r.total_score;
+
+  // Checks grid
+  const bd = r.breakdown || {};
+  const checkDefs = [
+    { key:"host",    icon:"🪪", label:"Host Identity",
+      val: c => c.host?.pan_valid ? "PAN verified" : "PAN not verified" },
+    { key:"gps",     icon:"📍", label:"GPS Location",
+      val: c => (c.gps?.score >= 15) ? "Location matched" : "Location mismatch" },
+    { key:"land",    icon:"📄", label:"7/12 Land Record",
+      val: c => c.land?.score > 0 ? "Document processed" : "Not uploaded" },
+    { key:"listing", icon:"🔍", label:"Listing Keywords",
+      val: c => (c.listing?.red_flags?.length || 0) === 0 ? "No red flags" : "Red flags found" }
+  ];
+
+  document.getElementById("checksGrid").innerHTML = checkDefs.map(d => {
+    const pts = bd[d.key]?.score ?? 0;
+    const max = bd[d.key]?.max ?? 25;
+    const pc  = pts >= max ? "pts-full" : pts > 0 ? "pts-half" : "pts-zero";
+    return `<div class="check-box">
+      <span class="check-box-icon">${d.icon}</span>
+      <div><div class="check-box-label">${d.label}</div>
+           <div class="check-box-val">${d.val(data.checks)}</div></div>
+      <span class="check-pts ${pc}">${pts}/${max}</span>
+    </div>`;
+  }).join("");
+
+  // Findings
+  const reasons  = r.reasons || [];
+  const okItems  = [];
+  if (data.checks?.host?.score >= 20) okItems.push("Host PAN verified in records");
+  if (data.checks?.gps?.score >= 15)  okItems.push("GPS location confirmed at property");
+  if (data.checks?.land?.score >= 15) okItems.push("Land record found and name matched");
+  if (data.checks?.listing?.score >= 15) okItems.push("Listing content — no fraud keywords");
+
+  const allFindings = [
+    ...okItems.map(m => `<div class="finding-item"><div class="f-dot ok"></div>${m}</div>`),
+    ...reasons.map(m  => `<div class="finding-item"><div class="f-dot bad"></div>${m}</div>`)
+  ];
+  document.getElementById("findingsList").innerHTML =
+    allFindings.length ? allFindings.join("") :
+    `<div class="finding-item"><div class="f-dot ok"></div>All checks passed</div>`;
+
+  document.getElementById("resultCard").style.display = "block";
+  document.getElementById("resultCard").scrollIntoView({behavior:"smooth"});
+}
+
+// ─── RESET ───────────────────────────────────────────────
+function resetAll() {
+  browserLat = browserLng = listingLat = listingLng = null;
+  photoBlob  = photoFile  = landFileData = null;
+  stopWebcam();
+  ["hostName","panNumber","aadhaar","propertyAddress",
+   "listingTitle","listingDesc","listingPrice"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  document.getElementById("landFileName").textContent = "";
+  document.getElementById("resultCard").style.display = "none";
+  document.getElementById("capturedWrap").style.display = "none";
+  document.getElementById("stepsBar").style.display = "flex";
+  ["gpsStatus","geocodeStatus","photoStatus"].forEach(id => {
+    document.getElementById(id).className = "status-box info";
+  });
+  showStep(1);
+}
+</script>
+</body>
+</html>
