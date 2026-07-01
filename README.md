@@ -11,7 +11,7 @@
 
 ## Live Demo
 
-🔗 **[https://verifystay-frontend.vercel.app](https://verifystay-frontend.vercel.app)](https://verifystay-frontend.vercel.app/)**
+🔗 **[https://verifystay-frontend.vercel.app]**
 
 ---
 
